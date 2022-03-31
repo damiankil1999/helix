@@ -26,6 +26,7 @@ Example usage:
 -- @field[type=string,opt="Storage"] name Title to display in the UI when the inventory is open.
 -- @field[type=boolean,opt=false] bMultipleUsers Whether or not multiple players are allowed to view this inventory at the
 -- same time.
+-- @field[type=boolean,opt=false] bNoMoney Wheter or not money should be shown in the storage or not.
 -- @field[type=number,opt=0] searchTime How long the player has to wait before the inventory is opened.
 -- @field[type=string,opt="@storageSearching"] text Text to display to the user while opening the inventory. If prefixed with
 -- `"@"`, it will display a language phrase.
@@ -88,6 +89,7 @@ if (SERVER) then
 		info.name = info.name or "Storage"
 		info.entity = assert(IsValid(info.entity), "expected valid entity in info table") and info.entity
 		info.bMultipleUsers = info.bMultipleUsers == nil and false or info.bMultipleUsers
+		info.bNoMoney = info.bNoMoney == nil and false or info.bNoMoney
 		info.searchTime = tonumber(info.searchTime) or 0
 		info.searchText = info.searchText or "@storageSearching"
 		info.data = info.data or {}
@@ -127,10 +129,12 @@ if (SERVER) then
 
 		-- we'll retrieve the money value as we're syncing because it may have changed while
 		-- we were waiting for the timer to finish
-		if (info.entity.GetMoney) then
-			info.data.money = info.entity:GetMoney()
-		elseif (info.entity:IsPlayer() and info.entity:GetCharacter()) then
-			info.data.money = info.entity:GetCharacter():GetMoney()
+		if (not info.bNoMoney) then
+			if (info.entity.GetMoney) then
+				info.data.money = info.entity:GetMoney()
+			elseif (info.entity:IsPlayer() and info.entity:GetCharacter()) then
+				info.data.money = info.entity:GetCharacter():GetMoney()
+			end
 		end
 
 		-- bags are automatically sync'd when the owning inventory is sync'd
@@ -300,6 +304,8 @@ if (SERVER) then
 			return
 		end
 
+		if (inventory.storageInfo.bNoMoney) then return end
+
 		local entity = inventory.storageInfo.entity
 
 		if (!IsValid(entity) or
@@ -349,6 +355,8 @@ if (SERVER) then
 		if (!inventory or !inventory.storageInfo or storageID != inventory:GetID()) then
 			return
 		end
+
+		if (inventory.storageInfo.bNoMoney) then return end
 
 		local entity = inventory.storageInfo.entity
 
