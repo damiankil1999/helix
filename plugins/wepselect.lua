@@ -146,7 +146,11 @@ if (CLIENT) then
 
 		if (bind:find("invprev") and !bTool) then
 			local oldIndex = self.index
-			self.index = math.min(self.index + 1, #weapons)
+			self.index = self.index + 1
+
+			if (self.index > #weapons) then
+				self.index = 1
+			end
 
 			if (self.alpha == 0 or oldIndex != self.index) then
 				self:OnIndexChanged(weapons[self.index])
@@ -155,7 +159,11 @@ if (CLIENT) then
 			return true
 		elseif (bind:find("invnext") and !bTool) then
 			local oldIndex = self.index
-			self.index = math.max(self.index - 1, 1)
+			self.index = self.index - 1
+
+			if (self.index <= 0) then
+				self.index = #weapons
+			end
 
 			if (self.alpha == 0 or oldIndex != self.index) then
 				self:OnIndexChanged(weapons[self.index])
