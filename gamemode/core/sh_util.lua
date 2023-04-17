@@ -521,7 +521,7 @@ if (CLIENT) then
 			if (wordWidth > maxWidth) then
 				local newWidth
 
-				for i2 = 1, string.len(word) do
+				for i2 = 1, word:utf8len() do
 					local character = word[i2]
 					newWidth = surface.GetTextSize(line .. character)
 
@@ -538,7 +538,8 @@ if (CLIENT) then
 				continue
 			end
 
-			local newLine = line .. " " .. word
+			local space = (i == 1) and "" or " "
+			local newLine = line .. space .. word
 			local newWidth = surface.GetTextSize(newLine)
 
 			if (newWidth > maxWidth) then
