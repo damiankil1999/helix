@@ -92,6 +92,7 @@ ITEM.functions.EquipUn = { -- sorry, for name order.
 	name = "Unequip",
 	tip = "equipTip",
 	icon = "icon16/cross.png",
+	hotkeyPriority = 1000,
 	OnRun = function(item)
 		item:RemovePart(item.player)
 
@@ -110,6 +111,7 @@ ITEM.functions.Equip = {
 	name = "Equip",
 	tip = "equipTip",
 	icon = "icon16/tick.png",
+	hotkeyPriority = 900,
 	OnRun = function(item)
 		local char = item.player:GetCharacter()
 		local items = char:GetInventory():GetItems()
