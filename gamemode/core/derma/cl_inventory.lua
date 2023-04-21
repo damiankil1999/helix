@@ -622,6 +622,7 @@ function PANEL:OnTransfer(oldX, oldY, x, y, oldInventory, noSend)
 
 	if (inventory) then
 		inventory.slots[oldX][oldY] = nil
+		hook.Run("ClientInventoryItemMoved", oldX, oldY, x, y, inventory, inventory2)
 	end
 
 	if (item and inventory2) then

@@ -499,6 +499,7 @@ do
 			end
 
 			inventory:Remove(id)
+			hook.Run("ClientInventoryItemRemoved", id, inventory)
 
 			invID = invID == LocalPlayer():GetCharacter():GetInventory():GetID() and 1 or invID
 			local panel = ix.gui["inv" .. invID]
