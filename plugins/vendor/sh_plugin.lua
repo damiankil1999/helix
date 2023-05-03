@@ -425,7 +425,7 @@ else
 			return
 		end
 
-		entity.money = net.ReadUInt(16)
+		entity.money = net.ReadUInt(20)
 		entity.items = net.ReadTable()
 		entity.scale = net.ReadFloat()
 
@@ -441,7 +441,7 @@ else
 			return
 		end
 
-		entity.money = net.ReadUInt(16)
+		entity.money = net.ReadUInt(20)
 		entity.items = net.ReadTable()
 		entity.scale = net.ReadFloat()
 		entity.messages = net.ReadTable()
@@ -596,7 +596,7 @@ else
 			return
 		end
 
-		local value = net.ReadUInt(16)
+		local value = net.ReadUInt(20)
 		value = value != -1 and value or nil
 
 		entity.money = value
@@ -688,7 +688,7 @@ properties.Add("vendor_edit", {
 
 		net.Start("ixVendorEditor")
 			net.WriteEntity(entity)
-			net.WriteUInt(entity.money or 0, 16)
+			net.WriteUInt(entity.money or 0, 20)
 			net.WriteTable(itemsTable)
 			net.WriteFloat(entity.scale or 0.5)
 			net.WriteTable(entity.messages)
