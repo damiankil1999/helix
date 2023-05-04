@@ -207,7 +207,7 @@ if (SERVER) then
 
 		net.Start("ixVendorOpen")
 			net.WriteEntity(self)
-			net.WriteUInt(self.money or 0, 16)
+			net.WriteUInt(self.money or 0, 20)
 			net.WriteTable(items)
 			net.WriteFloat(self.scale or 0.5)
 		net.Send(activator)
