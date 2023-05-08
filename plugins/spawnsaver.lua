@@ -14,6 +14,12 @@ function PLUGIN:CharacterPreSave(character)
 		if (client.ixObsData) then
 			position, eyeAngles = client.ixObsData[1], client.ixObsData[2]
 		end
+
+		-- ViewPunch / damage will tilt the screen
+		-- we can subtract client:GetViewPunchAngles()
+		-- or just prevent the screen from flipping upside down by setting roll to 0..
+		eyeAngles.r = 0
+
 		-- Store the position in the character's data.
 		character:SetData("pos", {position, eyeAngles, game.GetMap()})
 	end
