@@ -20,6 +20,10 @@ function ix.data.Set(key, value, bGlobal, bIgnoreMap)
 	-- Get the base path to write to.
 	local path = "helix/" .. (bGlobal and "" or Schema.folder .. "/") .. (bIgnoreMap and "" or game.GetMap() .. "/")
 
+	local pathOverride, keyOverride = hook.Run("OverwriteDataPath", key, bGlobal, bIgnoreMap, path)
+	if (type(pathOverride) == "string") then path = pathOverride end
+	if (type(keyOverride) == "string") then key = keyOverride end
+
 	-- Create the schema folder if the data is not global.
 	if (!bGlobal) then
 		file.CreateDir("helix/" .. Schema.folder .. "/")
@@ -47,6 +51,9 @@ end
 -- @bool[opt=false] bRefresh Whether or not to skip the cache and forcefully load from disk.
 -- @return Value associated with the key, or the default that was given if it doesn't exists
 function ix.data.Get(key, default, bGlobal, bIgnoreMap, bRefresh)
+	local pathOverride, keyOverride = hook.Run("OverwriteDataPath", key, bGlobal, bIgnoreMap, path)
+	if (type(keyOverride) == "string") then key = keyOverride end
+
 	-- If it exists in the cache, return the cached value so it is faster.
 	if (!bRefresh) then
 		local stored = ix.data.stored[key]
@@ -58,6 +65,8 @@ function ix.data.Get(key, default, bGlobal, bIgnoreMap, bRefresh)
 
 	-- Get the path to read from.
 	local path = "helix/" .. (bGlobal and "" or Schema.folder .. "/") .. (bIgnoreMap and "" or game.GetMap() .. "/")
+	if (type(pathOverride) == "string") then path = pathOverride end
+
 	-- Read the data from a local file.
 	local contents = file.Read(path .. key .. ".txt", "DATA")
 
@@ -99,6 +108,11 @@ end
 function ix.data.Delete(key, bGlobal, bIgnoreMap)
 	-- Get the path to read from.
 	local path = "helix/" .. (bGlobal and "" or Schema.folder .. "/") .. (bIgnoreMap and "" or game.GetMap() .. "/")
+
+	local pathOverride, keyOverride = hook.Run("OverwriteDataPath", key, bGlobal, bIgnoreMap, path)
+	if (type(pathOverride) == "string") then path = pathOverride end
+	if (type(keyOverride) == "string") then key = keyOverride end
+
 	-- Read the data from a local file.
 	local contents = file.Read(path .. key .. ".txt", "DATA")
 
