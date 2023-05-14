@@ -14,7 +14,6 @@ ITEM.invHeight = 2
 ITEM.isBag = true
 ITEM.functions.View = {
 	icon = "icon16/briefcase.png",
-	hotkeyPriority = 1000,
 	OnClick = function(item)
 		local index = item:GetData("id", "")
 

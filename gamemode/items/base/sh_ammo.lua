@@ -28,7 +28,6 @@ ITEM.functions.use = {
 	name = "Load",
 	tip = "useTip",
 	icon = "icon16/add.png",
-	hotkeyPriority = 1000,
 	OnRun = function(item)
 		local rounds = item:GetData("rounds", item.ammoAmount)
 
