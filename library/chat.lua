@@ -1,0 +1,146 @@
+---@meta
+
+---Chat messages can have different classes or "types" of messages that have different properties. This can include how the
+--- text is formatted, color, hearing distance, etc.
+---@class ChatClassStructure
+---What the player must type before their message in order to use this chat class. For example,
+--- having a prefix of `/Y` will require to type `/Y I am yelling` in order to send a message with this chat class. This can also
+--- be a table of strings if you want to allow multiple prefixes, such as `{"//", "/OOC"}`.
+---
+---**NOTE:** the prefix should usually start with a `/` to be consistent with the rest of the framework. However, you are able
+--- to use something different like the `LOOC` chat class where the prefixes are `.//`, `[[`, and `/LOOC`.
+---@field prefix string|string[]
+---Whether or not the `prefix` can be used without a space after it. For example, the
+--- `OOC` chat class allows you to type `//my message` instead of `// my message`. **NOTE:** this only works if the last
+--- character in the prefix is non-alphanumeric (i.e `noSpaceAfter` with `/Y` will not work, but `/!` will).
+---@field noSpaceAfter? boolean
+---@field description? string Description to show to the user in the chatbox when they're using this chat class
+---@field format? string How to format a message with this chat class. The first `%s` will be the speaking player's name, and the second one will be their message.
+---@field color? Color to use when displaying a message with this chat class
+---@field indicator? string Language phrase to use when displaying the typing indicator above the speaking player's head
+---@field bNoIndicator? boolean Whether or not to avoid showing the typing indicator above the speaking player's head
+---@field font? string Font to use for displaying a message with this chat class
+---@field deadCanChat? boolean Whether or not a dead player can send a message with this chat class
+---This can be either a `number` representing how far away another player can hear this message.
+--- IC messages will use the `chatRange` config, for example. This can also be a function, which returns `true` if the given
+--- listener can hear the message emitted from a speaker.
+--- ```
+--- -- message can be heard by any player 1000 units away from the speaking player
+--- CanHear = 1000
+--- ```
+--- OR
+--- ```
+--- CanHear = function(self, speaker, listener)
+--- 	-- the speaking player will be heard by everyone
+--- 	return true
+--- end
+--- ```
+---@field CanHear number|fun(self: ChatClassStructure, speaker: Player, listener: Player): boolean
+---Function to run to check whether or not a player can send a message with this chat class.
+--- By default, it will return `false` if the player is dead and `deadCanChat` is `false`. Overriding this function will prevent
+--- `deadCanChat` from working, and you must implement this functionality manually.
+--- ```
+--- CanSay = function(self, speaker, text)
+--- 	-- the speaker will never be able to send a message with this chat class
+--- 	return false
+--- end
+--- ```
+---@field CanSay? fun(self: ChatClassStructure, speaker: Player, text: string): boolean
+---Function to run to set the color of a message with this chat class. You should generally
+--- stick to using `color`, but this is useful for when you want the color of the message to change with some criteria.
+--- ```
+--- GetColor = function(self, speaker, text)
+--- 	-- each message with this chat class will be colored a random shade of red
+--- 	return Color(math.random(120, 200), 0, 0)
+--- end
+--- ```
+---@field GetColor? fun(self: ChatClassStructure, speaker: Player, text: string): Color
+---Function to run when a message with this chat class should be added to the chatbox. If
+--- using this function, make sure you end the function by calling `chat.AddText` in order for the text to show up.
+---
+---**NOTE:** using your own `OnChatAdd` function will prevent `color`, `GetColor`, or `format` from being used since you'll be
+--- overriding the base function that uses those properties. In such cases you'll need to add that functionality back in
+--- manually. In general, you should avoid overriding this function where possible. The `data` argument in the function is
+--- whatever is passed into the same `data` argument in `ix.chat.Send`.
+---
+--- ```
+--- OnChatAdd = function(self, speaker, text, bAnonymous, data)
+--- 	-- adds white text in the form of "Player Name: Message contents"
+--- 	chat.AddText(color_white, speaker:GetName(), ": ", text)
+--- end
+--- ```
+---@field OnChatAdd? fun(self: ChatClassStructure, speaker: Player, text: string, bAnonymous: boolean, data: table)
+
+---Chat manipulation and helper functions.
+---
+---Chat messages are a core part of the framework - it's takes up a good chunk of the gameplay, and is also used to interact with
+--- the framework. Chat messages can have types or "classes" that describe how the message should be interpreted. All chat messages
+--- will have some type of class: `ic` for regular in-character speech, `me` for actions, `ooc` for out-of-character, etc. These
+--- chat classes can affect how the message is displayed in each player's chatbox. See `ix.chat.Register` and `ChatClassStructure`
+--- to create your own chat classes.
+---@class ix.chat
+---List of all chat classes that have been registered by the framework, where each key is the name of the chat class, and value
+--- is the chat class data. Accessing a chat class's data is useful for when you want to copy some functionality or properties
+--- to use in your own. Note that if you're accessing this table, you should do so inside of the `InitializedChatClasses` hook.
+---
+---Example:
+--- ```
+--- print(ix.chat.classes.ic.format) --> "%s says \"%s\""
+--- ```
+---@field classes table
+ix.chat = {}
+
+---[SHARED] Registers a new chat type with the information provided. Chat classes should usually be created inside of the
+--- `InitializedChatClasses` hook.
+--- ```
+--- -- this is the "me" chat class taken straight from the framework as an example
+--- ix.chat.Register("me", {
+--- 	format = "** %s %s",
+--- 	color = Color(255, 50, 50),
+--- 	CanHear = ix.config.Get("chatRange", 280) * 2,
+--- 	prefix = {"/Me", "/Action"},
+--- 	description = "@cmdMe",
+--- 	indicator = "chatPerforming",
+--- 	deadCanChat = true
+--- })
+--- ```
+---@see ChatClassStructure
+---@param chatType string Name of the chat type
+---@param data ChatClassStructure Properties and functions to assign to this chat class
+function ix.chat.Register(chatType, data) end
+
+---[SHARED] Identifies which chat mode should be used.
+---@param client Player Player who is speaking
+---@param message string Message to parse
+---@param bNoSend? boolean Whether or not to send the chat message after parsing
+---@return string #Name of the chat type
+---@return string #Message that was parsed
+---@return boolean #Whether or not the speaker should be anonymous
+function ix.chat.Parse(client, message, bNoSend) end
+
+---[SHARED] Formats a string to fix basic grammar - removing extra spacing at the beginning and end, capitalizing the first character,
+--- and making sure it ends in punctuation.
+--- ```
+--- print(ix.chat.Format("hello")) --> Hello.
+--- print(ix.chat.Format("wow!")) --> Wow!
+--- ```
+---@param text string String to format
+---@return string #Formatted string
+function ix.chat.Format(text) end
+
+---[SERVER] Send a chat message using the specified chat type.
+---@param speaker Player Player who is speaking
+---@param chatType string Name of the chat type
+---@param text string Message to send
+---@param bAnonymous? boolean Whether or not the speaker should be anonymous
+---@param receivers? Player[] The players to replicate send the message to
+---@param data? table Additional data for this chat message
+function ix.chat.Send(speaker, chatType, text, bAnonymous, receivers, data) end
+
+---[CLIENT]
+---@param speaker Player Player who is speaking
+---@param chatType string Name of the chat type
+---@param text string Message to send
+---@param anonymous? boolean Whether or not the speaker should be anonymous
+---@param data? table Additional data for this chat message
+function ix.chat.Send(speaker, chatType, text, anonymous, data) end

@@ -1,0 +1,7 @@
+{
+	"todo-tree.regex.regex": "(//|#|<!--|;|--|---@|/\\*|^|^[ \\t]*(-|\\d+.))\\s*($TAGS)",
+	"cSpell.words": [
+		"glua",
+		"sumneko"
+	]
+}

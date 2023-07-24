@@ -1,0 +1,28 @@
+{
+	"name": "Garry's Mod Helix library files",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"customizations": {
+		"vscode": {
+			// spell-checker: disable
+			"extensions": [
+				"sumneko.lua",
+				"streetsidesoftware.code-spell-checker",
+				"EditorConfig.EditorConfig",
+				"mutantdino.resourcemonitor",
+				"eamodio.gitlens",
+				"nhoizey.gremlins",
+				"seatonjiang.gitmoji-vscode",
+				"Gruntfuggly.todo-tree"
+			],
+			// spell-checker: enable
+			"settings": {
+				"extensions.ignoreRecommendations": true,
+				"Lua.workspace.library": [
+					"/home/vscode/glua-api-snippets-lua-language-server-addon/library"
+				]
+			}
+		}
+	}
+}
