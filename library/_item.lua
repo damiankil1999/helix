@@ -212,11 +212,11 @@ function Item:Spawn(position, angles) end
 
 ---[SERVER] Transfers an item to a specific inventory.
 ---@param invID? number The inventory to transfer the item to
----@param x number The X position to which the item should be transferred on the new inventory
----@param y number The Y position to which the item should be transferred on the new inventory
----@param client Player The player to which the item is being transferred
----@param noReplication boolean? Whether there should be no replication of the transferral
----@param isLogical boolean? Whether or not an entity should spawn if the item is transferred to the world
+---@param x? number The X position to which the item should be transferred on the new inventory
+---@param y? number The Y position to which the item should be transferred on the new inventory
+---@param client? Player The player to which the item is being transferred
+---@param noReplication? boolean Whether there should be no replication of the transferral
+---@param isLogical? boolean Whether or not an entity should spawn if the item is transferred to the world
 ---@return boolean #Whether the transfer was successful or not
 ---@return string? #The error, if applicable
 function Item:Transfer(invID, x, y, client, noReplication, isLogical) end
