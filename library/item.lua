@@ -4,7 +4,7 @@
 ---@class ix.item
 ---@field list table<string, Item>
 ---@field base table<string, Item>
----@field instances table
+---@field instances table<number, Item>
 ---@field inventories table<number, Inventory>
 ---@field inventoryTypes table
 ix.item = {}
