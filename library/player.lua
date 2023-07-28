@@ -249,7 +249,7 @@ function Player:ToggleWepRaised() end
 function Player:PerformInteraction(time, entity, callback) end
 
 ---[SERVER] Displays a progress bar for this player that takes the given amount of time to complete.
----@param text string Text to display above the progress bar
+---@param text? string|false Text to display above the progress bar. If `nil` clears the current action but keeps the callback queued, if `false` will also remove the callback.
 ---@param time? number How much time in seconds to wait before the timer completes. Defaults to `5`.
 ---@param callback? fun(self: Player) Function to run once the timer completes
 ---@param startTime? number Game time in seconds that the timer started. If you are using `time`, then you shouldn't use this argument. Defaults to `CurTime()`.
