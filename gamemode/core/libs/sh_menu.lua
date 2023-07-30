@@ -101,8 +101,8 @@ do
 			return options
 		end
 	else
-		function PLAYER:OnOptionSelected(client, option)
-			hook.Run("OnPlayerOptionSelected", self, client, option)
+		function PLAYER:OnOptionSelected(client, option, data)
+			hook.Run("OnPlayerOptionSelected", self, client, option, data)
 		end
 	end
 end

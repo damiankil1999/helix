@@ -648,7 +648,7 @@ function OnPlayerObserve(client, state)
 end
 
 --- @realm server
-function OnPlayerOptionSelected(client, callingClient, option)
+function OnPlayerOptionSelected(client, callingClient, option, data)
 end
 
 --- @realm server
