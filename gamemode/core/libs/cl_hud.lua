@@ -1,29 +1,29 @@
-
 ix.hud = {}
 
 function ix.hud.DrawItemPickup()
-	local pickupTime = ix.config.Get("itemPickupTime", 0.5)
+	local client = LocalPlayer()
 
-	if (pickupTime == 0) then
+	local duration = client.ixInteractionDuration or ix.config.Get("itemPickupTime", 0.5)
+	if (duration == 0) then
 		return
 	end
 
-	local client = LocalPlayer()
 	local entity = client.ixInteractionTarget
 	local startTime = client.ixInteractionStartTime
 
 	if (IsValid(entity) and startTime) then
 		local sysTime = SysTime()
-		local endTime = startTime + pickupTime
+		local endTime = startTime + duration
 
 		if (sysTime >= endTime or client:GetEyeTrace().Entity != entity) then
 			client.ixInteractionTarget = nil
 			client.ixInteractionStartTime = nil
+			client.ixInteractionDuration = nil
 
 			return
 		end
 
-		local fraction = math.min((endTime - sysTime) / pickupTime, 1)
+		local fraction = math.min((endTime - sysTime) / duration, 1)
 		local x, y = ScrW() / 2, ScrH() / 2
 		local radius, thickness = 32, 6
 		local startAngle = 90
@@ -33,6 +33,13 @@ function ix.hud.DrawItemPickup()
 		ix.util.DrawArc(x, y, radius, thickness, startAngle, endAngle, 2, color)
 	end
 end
+
+net.Receive("ixInteraction", function(len)
+	local client = LocalPlayer()
+	client.ixInteractionTarget = net.ReadEntity()
+	client.ixInteractionDuration = net.ReadFloat()
+	client.ixInteractionStartTime = SysTime()
+end)
 
 function ix.hud.PopulateItemTooltip(tooltip, item)
 	local name = tooltip:AddRow("name")
@@ -75,7 +82,7 @@ function ix.hud.PopulatePlayerTooltip(tooltip, client)
 	ping.Paint = function(_, width, height)
 		surface.SetDrawColor(ColorAlpha(derma.GetColor(
 			currentPing < 110 and "Success" or (currentPing < 165 and "Warning" or "Error")
-		, tooltip), 22))
+			, tooltip), 22))
 		surface.DrawRect(0, 0, width, height)
 	end
 	ping:SizeToContents()

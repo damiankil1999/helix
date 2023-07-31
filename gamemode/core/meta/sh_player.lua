@@ -1,4 +1,3 @@
-
 --[[--
 Physical representation of connected player.
 
@@ -100,7 +99,7 @@ function meta:GetItemDropPos(entity)
 
 		data.mins = mins
 		data.maxs = maxs
-		data.filter = {entity, self}
+		data.filter = { entity, self }
 		trace = util.TraceHull(data)
 	else
 		-- trace along the normal for a few units so we can attempt to avoid a collision
@@ -130,14 +129,14 @@ end
 -- end)
 -- -- prints "hello!" after looking at the entity for 4 seconds
 function meta:DoStaredAction(entity, callback, time, onCancel, distance)
-	local uniqueID = "ixStare"..self:UniqueID()
+	local uniqueID = "ixStare" .. self:UniqueID()
 	local data = {}
 	data.filter = self
 
 	timer.Create(uniqueID, 0.1, time / 0.1, function()
 		if (IsValid(self) and IsValid(entity)) then
 			data.start = self:GetShootPos()
-			data.endpos = data.start + self:GetAimVector()*(distance or 96)
+			data.endpos = data.start + self:GetAimVector() * (distance or 96)
 
 			if (util.TraceLine(data).Entity != entity) then
 				timer.Remove(uniqueID)
@@ -170,6 +169,7 @@ if (SERVER) then
 	util.AddNetworkString("ixActionBar")
 	util.AddNetworkString("ixActionBarReset")
 	util.AddNetworkString("ixStringRequest")
+	util.AddNetworkString("ixInteraction")
 
 	--- Sets whether or not this player's current weapon is raised.
 	-- @realm server
@@ -180,7 +180,7 @@ if (SERVER) then
 		weapon = weapon or self:GetActiveWeapon()
 
 		if (IsValid(weapon)) then
-			local bCanShoot = !bState and weapon.FireWhenLowered or bState
+			local bCanShoot = ! bState and weapon.FireWhenLowered or bState
 			self:SetNetVar("raised", bState)
 
 			if (bCanShoot) then
@@ -207,17 +207,17 @@ if (SERVER) then
 	function meta:ToggleWepRaised()
 		local weapon = self:GetActiveWeapon()
 
-		if (!IsValid(weapon) or
-			weapon.IsAlwaysRaised or ALWAYS_RAISED[weapon:GetClass()] or
-			weapon.IsAlwaysLowered or weapon.NeverRaised) then
+		if (! IsValid(weapon) or
+				weapon.IsAlwaysRaised or ALWAYS_RAISED[weapon:GetClass()] or
+				weapon.IsAlwaysLowered or weapon.NeverRaised) then
 			return
 		end
 
-		self:SetWepRaised(!self:IsWepRaised(), weapon)
+		self:SetWepRaised(! self:IsWepRaised(), weapon)
 
 		if (self:IsWepRaised() and weapon.OnRaised) then
 			weapon:OnRaised()
-		elseif (!self:IsWepRaised() and weapon.OnLowered) then
+		elseif (! self:IsWepRaised() and weapon.OnLowered) then
 			weapon:OnLowered()
 		end
 	end
@@ -229,36 +229,51 @@ if (SERVER) then
 	-- @entity entity Entity that this player must be looking at
 	-- @func callback Function to run when the timer completes. It will be ran right away if `time` is `0`. Returning `false` in
 	-- the callback will not mark this interaction as dirty if you're managing the interaction state manually.
-	function meta:PerformInteraction(time, entity, callback)
-		if (!IsValid(entity) or entity.ixInteractionDirty) then
+	-- @bool bDontNetwork Don't sync to the player.
+	function meta:PerformInteraction(time, entity, callback, bDontNetwork)
+		-- Prevent creating new interactions if the entity is dirty.
+		-- It will be marked dirty if someone has interacted with it.
+		if (not IsValid(entity) or entity.ixInteractionDirty) then
 			return
 		end
 
-		if (time > 0) then
-			self.ixInteractionTarget = entity
-			self.ixInteractionCharacter = self:GetCharacter():GetID()
+		-- If the time is less than or equal to zero we want to immediately run the callback.
+		if (time <= 0 and callback(self) ~= false) then
+			entity.ixInteractionDirty = true
+		end
 
-			timer.Create("ixCharacterInteraction" .. self:SteamID(), time, 1, function()
-				if (IsValid(self) and IsValid(entity) and IsValid(self.ixInteractionTarget) and
-					self.ixInteractionCharacter == self:GetCharacter():GetID()) then
-					local data = {}
-						data.start = self:GetShootPos()
-						data.endpos = data.start + self:GetAimVector() * 96
-						data.filter = self
-					local traceEntity = util.TraceLine(data).Entity
+		-- Backwards compatibility.
+		if (bDontNetwork == nil) then bDontNetwork = entity.ShowPlayerInteraction end
 
-					if (IsValid(traceEntity) and traceEntity == self.ixInteractionTarget and !traceEntity.ixInteractionDirty) then
-						if (callback(self) != false) then
-							traceEntity.ixInteractionDirty = true
-						end
-					end
-				end
-			end)
-		else
-			if (callback(self) != false) then
+		if (not bDontNetwork) then
+			net.Start("ixInteraction")
+			net.WriteEntity(entity)
+			net.WriteFloat(time)
+			net.Send(self)
+		end
+
+		self.ixInteractionTarget = entity
+		self.ixInteractionCharacter = self:GetCharacter():GetID()
+
+		timer.Create("ixCharacterInteraction" .. self:SteamID(), time, 1, function()
+			if (not IsValid(self)) then return end
+
+			local data = {}
+			data.start = self:GetShootPos()
+			data.endpos = data.start + self:GetAimVector() * 96
+			data.filter = self
+			local traceEntity = util.TraceLine(data).Entity
+
+			-- Check if we somehow should prevent this interaction.
+			if (not IsValid(entity) or not IsValid(traceEntity) or traceEntity ~= entity or self.ixInteractionCharacter ~= self:GetCharacter():GetID() or entity.ixInteractionDirty) then
+				return
+			end
+
+			-- Run the actual callback now.
+			if (callback(self) ~= false) then
 				entity.ixInteractionDirty = true
 			end
-		end
+		end)
 	end
 
 	--- Displays a progress bar for this player that takes the given amount of time to complete.
@@ -285,7 +300,7 @@ if (SERVER) then
 		finishTime = finishTime or (startTime + time)
 
 		if (text == false) then
-			timer.Remove("ixAct"..self:UniqueID())
+			timer.Remove("ixAct" .. self:UniqueID())
 
 			net.Start("ixActionBarReset")
 			net.Send(self)
@@ -293,21 +308,21 @@ if (SERVER) then
 			return
 		end
 
-		if (!text) then
+		if (! text) then
 			net.Start("ixActionBarReset")
 			net.Send(self)
 		else
 			net.Start("ixActionBar")
-				net.WriteFloat(startTime)
-				net.WriteFloat(finishTime)
-				net.WriteString(text)
+			net.WriteFloat(startTime)
+			net.WriteFloat(finishTime)
+			net.WriteString(text)
 			net.Send(self)
 		end
 
 		-- If we have provided a callback, run it delayed.
 		if (callback) then
 			-- Create a timer that runs once with a delay.
-			timer.Create("ixAct"..self:UniqueID(), time, 1, function()
+			timer.Create("ixAct" .. self:UniqueID(), time, 1, function()
 				-- Call the callback if the player is still valid.
 				if (IsValid(self)) then
 					callback(self)
@@ -334,10 +349,10 @@ if (SERVER) then
 		self.ixStrReqs[time] = callback
 
 		net.Start("ixStringRequest")
-			net.WriteUInt(time, 32)
-			net.WriteString(title)
-			net.WriteString(subTitle)
-			net.WriteString(default)
+		net.WriteUInt(time, 32)
+		net.WriteString(title)
+		net.WriteString(subTitle)
+		net.WriteString(default)
 		net.Send(self)
 	end
 
@@ -398,7 +413,7 @@ if (SERVER) then
 
 		entity:Spawn()
 
-		if (!bDontSetPlayer) then
+		if (! bDontSetPlayer) then
 			entity:SetNetVar("player", self)
 		end
 
@@ -435,7 +450,7 @@ if (SERVER) then
 	-- @number[opt=5] getUpGrace How much time in seconds to wait before the player is able to get back up manually. Set to
 	-- the same number as `time` to disable getting up manually entirely
 	function meta:SetRagdolled(bState, time, getUpGrace)
-		if (!self:Alive()) then
+		if (! self:Alive()) then
 			return
 		end
 
@@ -453,7 +468,7 @@ if (SERVER) then
 					self:SetLocalVar("blur", nil)
 					self:SetLocalVar("ragdoll", nil)
 
-					if (!entity.ixNoReset) then
+					if (! entity.ixNoReset) then
 						self:SetPos(entity:GetPos())
 					end
 
@@ -463,7 +478,7 @@ if (SERVER) then
 					self:SetLocalVelocity(IsValid(entity) and entity.ixLastVelocity or vector_origin)
 				end
 
-				if (IsValid(self) and !entity.ixIgnoreDelete) then
+				if (IsValid(self) and ! entity.ixIgnoreDelete) then
 					if (entity.ixWeapons) then
 						for _, v in ipairs(entity.ixWeapons) do
 							if (v.class) then
@@ -497,12 +512,12 @@ if (SERVER) then
 						entity:DropToFloor()
 						self:SetPos(entity:GetPos() + Vector(0, 0, 16))
 
-						local positions = ix.util.FindEmptySpace(self, {entity, self})
+						local positions = ix.util.FindEmptySpace(self, { entity, self })
 
 						for _, v in ipairs(positions) do
 							self:SetPos(v)
 
-							if (!self:IsStuck()) then
+							if (! self:IsStuck()) then
 								return
 							end
 						end
@@ -568,7 +583,7 @@ if (SERVER) then
 						self:SetPos(entity:GetPos())
 
 						if (velocity:Length2D() >= 8) then
-							if (!entity.ixPausing) then
+							if (! entity.ixPausing) then
 								self:SetAction()
 								entity.ixPausing = true
 							end

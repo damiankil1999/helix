@@ -1,4 +1,3 @@
-
 util.AddNetworkString("ixPlayerDeath")
 
 function GM:PlayerInitialSpawn(client)
@@ -20,7 +19,7 @@ function GM:PlayerInitialSpawn(client)
 		inventory:SetOwner(botID)
 		inventory.noSave = true
 
-		character.vars.inv = {inventory}
+		character.vars.inv = { inventory }
 
 		ix.char.loaded[botID] = character
 
@@ -36,7 +35,7 @@ function GM:PlayerInitialSpawn(client)
 	ix.date.Send(client)
 
 	client:LoadData(function(data)
-		if (!IsValid(client)) then return end
+		if (! IsValid(client)) then return end
 
 		-- Don't use the character cache if they've connected to another server using the same database
 		local address = ix.util.GetAddress()
@@ -44,12 +43,12 @@ function GM:PlayerInitialSpawn(client)
 		client:SetData("lastIP", address)
 
 		net.Start("ixDataSync")
-			net.WriteTable(data or {})
-			net.WriteUInt(client.ixPlayTime or 0, 32)
+		net.WriteTable(data or {})
+		net.WriteUInt(client.ixPlayTime or 0, 32)
 		net.Send(client)
 
 		ix.char.Restore(client, function(charList)
-			if (!IsValid(client)) then return end
+			if (! IsValid(client)) then return end
 
 			MsgN("Loaded (" .. table.concat(charList, ", ") .. ") for " .. client:Name())
 
@@ -87,7 +86,7 @@ function GM:PlayerInitialSpawn(client)
 	client:SyncVars()
 
 	timer.Simple(1, function()
-		if (!IsValid(client)) then
+		if (! IsValid(client)) then
 			return
 		end
 
@@ -106,16 +105,16 @@ end
 
 function GM:KeyPress(client, key)
 	if (key == IN_RELOAD) then
-		timer.Create("ixToggleRaise"..client:SteamID(), ix.config.Get("weaponRaiseTime"), 1, function()
+		timer.Create("ixToggleRaise" .. client:SteamID(), ix.config.Get("weaponRaiseTime"), 1, function()
 			if (IsValid(client)) then
 				client:ToggleWepRaised()
 			end
 		end)
 	elseif (key == IN_USE) then
 		local data = {}
-			data.start = client:GetShootPos()
-			data.endpos = data.start + client:GetAimVector() * 96
-			data.filter = client
+		data.start = client:GetShootPos()
+		data.endpos = data.start + client:GetAimVector() * 96
+		data.filter = client
 		local entity = util.TraceLine(data).Entity
 
 		if (IsValid(entity) and hook.Run("PlayerUse", client, entity)) then
@@ -135,6 +134,15 @@ function GM:KeyRelease(client, key)
 		timer.Remove("ixToggleRaise" .. client:SteamID())
 	elseif (key == IN_USE) then
 		timer.Remove("ixCharacterInteraction" .. client:SteamID())
+
+		-- Unmark the interaction as dirty
+		if (IsValid(client.ixInteractionTarget)) then
+			client.ixInteractionTarget.ixInteractionDirty = nil
+		end
+
+		-- Cleanup the interaction target.
+		client.ixInteractionTarget = nil
+		client.ixInteractionCharacter = nil
 	end
 end
 
@@ -168,7 +176,7 @@ function GM:CanPlayerInteractItem(client, action, item, data)
 		if (combineItem and combineItem.invID != 0) then
 			local combineInv = ix.item.inventories[combineItem.invID]
 
-			if (!combineInv:OnCheckAccess(client)) then
+			if (! combineInv:OnCheckAccess(client)) then
 				return false
 			end
 		else
@@ -177,8 +185,8 @@ function GM:CanPlayerInteractItem(client, action, item, data)
 	end
 
 	if (isentity(item) and item.ixSteamID and item.ixCharID
-	and item.ixSteamID == client:SteamID() and item.ixCharID != client:GetCharacter():GetID()
-	and !item:GetItemTable().bAllowMultiCharacterInteraction) then
+			and item.ixSteamID == client:SteamID() and item.ixCharID != client:GetCharacter():GetID()
+			and ! item:GetItemTable().bAllowMultiCharacterInteraction) then
 		client:NotifyLocalized("itemOwned")
 		return false
 	end
@@ -246,8 +254,8 @@ end
 
 function GM:PlayerLoadedCharacter(client, character, lastChar)
 	local query = mysql:Update("ix_characters")
-		query:Where("id", character:GetID())
-		query:Update("last_join_time", math.floor(os.time()))
+	query:Where("id", character:GetID())
+	query:Update("last_join_time", math.floor(os.time()))
 	query:Execute()
 
 	if (lastChar) then
@@ -305,7 +313,7 @@ function GM:CharacterLoaded(character)
 	local client = character:GetPlayer()
 
 	if (IsValid(client)) then
-		local uniqueID = "ixSaveChar"..client:SteamID()
+		local uniqueID = "ixSaveChar" .. client:SteamID()
 
 		timer.Create(uniqueID, ix.config.Get("saveInterval"), 0, function()
 			if (IsValid(client) and client:GetCharacter()) then
@@ -444,7 +452,7 @@ end
 
 local voiceDistance = 360000
 local function CalcPlayerCanHearPlayersVoice(listener)
-	if (!IsValid(listener)) then
+	if (! IsValid(listener)) then
 		return
 	end
 
@@ -633,7 +641,7 @@ function GM:PlayerDeath(client, inflictor, attacker)
 		if (deathSound != false) then
 			deathSound = deathSound or deathSounds[math.random(1, #deathSounds)]
 
-			if (client:IsFemale() and !deathSound:find("female")) then
+			if (client:IsFemale() and ! deathSound:find("female")) then
 				deathSound = deathSound:gsub("male", "female")
 			end
 
@@ -672,7 +680,7 @@ function GM:PlayerHurt(client, attacker, health, damage)
 	if ((client.ixNextPain or 0) < CurTime() and health > 0) then
 		local painSound = hook.Run("GetPlayerPainSound", client) or painSounds[math.random(1, #painSounds)]
 
-		if (client:IsFemale() and !painSound:find("female")) then
+		if (client:IsFemale() and ! painSound:find("female")) then
 			painSound = painSound:gsub("male", "female")
 		end
 
@@ -710,7 +718,7 @@ function GM:PlayerDisconnected(client)
 		end
 
 		hook.Run("OnCharacterDisconnect", client, character)
-			character:Save()
+		character:Save()
 		ix.chat.Send(nil, "disconnect", client:SteamName())
 	end
 
@@ -720,12 +728,12 @@ function GM:PlayerDisconnected(client)
 
 	client:ClearNetVars()
 
-	if (!client.ixVoiceHear) then
+	if (! client.ixVoiceHear) then
 		return
 	end
 
 	for _, v in ipairs(player.GetAll()) do
-		if (!v.ixVoiceHear) then
+		if (! v.ixVoiceHear) then
 			continue
 		end
 
@@ -781,7 +789,7 @@ function GM:ShutDown()
 end
 
 function GM:GetGameDescription()
-	return "IX: "..(Schema and Schema.name or "Unknown")
+	return "IX: " .. (Schema and Schema.name or "Unknown")
 end
 
 function GM:OnPlayerUseBusiness(client, item)
@@ -796,11 +804,11 @@ function GM:PlayerDeathSound()
 end
 
 function GM:InitializedSchema()
-	game.ConsoleCommand("sbox_persist ix_"..Schema.folder.."\n")
+	game.ConsoleCommand("sbox_persist ix_" .. Schema.folder .. "\n")
 end
 
 function GM:PlayerCanHearPlayersVoice(listener, speaker)
-	if (!speaker:Alive()) then
+	if (! speaker:Alive()) then
 		return false
 	end
 
@@ -810,9 +818,9 @@ end
 
 function GM:PlayerCanPickupWeapon(client, weapon)
 	local data = {}
-		data.start = client:GetShootPos()
-		data.endpos = data.start + client:GetAimVector() * 96
-		data.filter = client
+	data.start = client:GetShootPos()
+	data.endpos = data.start + client:GetAimVector() * 96
+	data.filter = client
 	local trace = util.TraceLine(data)
 
 	if (trace.Entity == weapon and client:KeyDown(IN_USE)) then
@@ -824,7 +832,7 @@ end
 
 function GM:OnPhysgunFreeze(weapon, physObj, entity, client)
 	-- Object is already frozen (!?)
-	if (!physObj:IsMoveable()) then return false end
+	if (! physObj:IsMoveable()) then return false end
 	if (entity:GetUnFreezable()) then return false end
 
 	physObj:EnableMotion(false)
@@ -880,7 +888,7 @@ timer.Create("ixLifeGuard", 1, 0, function()
 	for _, v in ipairs(player.GetAll()) do
 		if (v:GetCharacter() and v:Alive() and hook.Run("ShouldPlayerDrowned", v) != false) then
 			if (v:WaterLevel() >= 3) then
-				if (!v.drowningTime) then
+				if (! v.drowningTime) then
 					v.drowningTime = CurTime() + 30
 					v.nextDrowning = CurTime()
 					v.drownDamage = v.drownDamage or 0
@@ -936,7 +944,7 @@ function GM:GetPreferredCarryAngles(entity)
 end
 
 function GM:PluginShouldLoad(uniqueID)
-	return !ix.plugin.unloaded[uniqueID]
+	return ! ix.plugin.unloaded[uniqueID]
 end
 
 function GM:DatabaseConnected()

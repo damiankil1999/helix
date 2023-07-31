@@ -1,4 +1,3 @@
-
 function GM:ForceDermaSkin()
 	return "helix"
 end
@@ -295,7 +294,7 @@ end
 local LOWERED_ANGLES = Angle(30, 0, -25)
 
 function GM:CalcViewModelView(weapon, viewModel, oldEyePos, oldEyeAngles, eyePos, eyeAngles)
-	if (!IsValid(weapon)) then
+	if (! IsValid(weapon)) then
 		return
 	end
 
@@ -330,7 +329,7 @@ function GM:CalcViewModelView(weapon, viewModel, oldEyePos, oldEyeAngles, eyePos
 end
 
 function GM:LoadIntro()
-	if (!IsValid(ix.gui.intro)) then
+	if (! IsValid(ix.gui.intro)) then
 		vgui.Create("ixIntro")
 	end
 end
@@ -349,7 +348,7 @@ function GM:InitializedConfig()
 	hook.Run("LoadFonts", ix.config.Get("font"), ix.config.Get("genericFont"))
 	hook.Run("ColorSchemeChanged", color)
 
-	if (!ix.config.loaded and !IsValid(ix.gui.loading)) then
+	if (! ix.config.loaded and ! IsValid(ix.gui.loading)) then
 		local loader = vgui.Create("EditablePanel")
 		loader:ParentToHUD()
 		loader:Dock(FILL)
@@ -360,7 +359,7 @@ function GM:InitializedConfig()
 
 		local statusLabel = loader:Add("DLabel")
 		statusLabel:Dock(FILL)
-		statusLabel:SetText(L"loading")
+		statusLabel:SetText(L "loading")
 		statusLabel:SetFont("ixTitleFont")
 		statusLabel:SetContentAlignment(5)
 		statusLabel:SetTextColor(color_white)
@@ -370,7 +369,7 @@ function GM:InitializedConfig()
 				local fault = GetNetVar("dbError")
 
 				if (fault) then
-					statusLabel:SetText(fault and L"dbError" or L"loading")
+					statusLabel:SetText(fault and L "dbError" or L "loading")
 
 					local label = loader:Add("DLabel")
 					label:DockMargin(0, 64, 0, 0)
@@ -425,16 +424,16 @@ local vignetteAlphaDelta = 0
 local vignetteTraceHeight = Vector(0, 0, 768)
 local blurGoal = 0
 local blurDelta = 0
-local hasVignetteMaterial = !vignette:IsError()
+local hasVignetteMaterial = ! vignette:IsError()
 
 timer.Create("ixVignetteChecker", 1, 0, function()
 	local client = LocalPlayer()
 
 	if (IsValid(client)) then
 		local data = {}
-			data.start = client:GetPos()
-			data.endpos = data.start + vignetteTraceHeight
-			data.filter = client
+		data.start = client:GetPos()
+		data.endpos = data.start + vignetteTraceHeight
+		data.filter = client
 		local trace = util.TraceLine(data)
 
 		-- this timer could run before InitPostEntity is called, so we have to check for the validity of the trace table
@@ -451,8 +450,8 @@ function GM:CalcView(client, origin, angles, fov)
 	local entity = Entity(client:GetLocalVar("ragdoll", 0))
 	local ragdoll = IsValid(client:GetRagdollEntity()) and client:GetRagdollEntity() or entity
 
-	if ((!client:ShouldDrawLocalPlayer() and IsValid(entity) and entity:IsRagdoll())
-	or (!LocalPlayer():Alive() and IsValid(ragdoll))) then
+	if ((! client:ShouldDrawLocalPlayer() and IsValid(entity) and entity:IsRagdoll())
+			or (! LocalPlayer():Alive() and IsValid(ragdoll))) then
 		local ent = LocalPlayer():Alive() and entity or ragdoll
 		local index = ent:LookupAttachment("eyes")
 
@@ -498,13 +497,13 @@ do
 		local client = LocalPlayer()
 		local time = SysTime()
 
-		if (!IsValid(client)) then
+		if (! IsValid(client)) then
 			return
 		end
 
 		local character = client:GetCharacter()
 
-		if (!character) then
+		if (! character) then
 			return
 		end
 
@@ -521,19 +520,19 @@ do
 		end
 
 		local panel = ix.gui.entityInfo
-		local bShouldShow = time >= aimTime and (!IsValid(ix.gui.menu) or ix.gui.menu.bClosing) and
-			(!IsValid(ix.gui.characterMenu) or ix.gui.characterMenu.bClosing)
+		local bShouldShow = time >= aimTime and (! IsValid(ix.gui.menu) or ix.gui.menu.bClosing) and
+			(! IsValid(ix.gui.characterMenu) or ix.gui.characterMenu.bClosing)
 		local bShouldPopulate = lastEntity.OnShouldPopulateEntityInfo and lastEntity:OnShouldPopulateEntityInfo() or true
 
 		if (bShouldShow and IsValid(lastEntity) and hookRun("ShouldPopulateEntityInfo", lastEntity) != false and
-			(lastEntity.PopulateEntityInfo or bShouldPopulate)) then
-
-			if (!IsValid(panel) or (IsValid(panel) and panel:GetEntity() != lastEntity)) then
+				(lastEntity.PopulateEntityInfo or bShouldPopulate)) then
+			if (! IsValid(panel) or (IsValid(panel) and panel:GetEntity() != lastEntity)) then
 				if (IsValid(ix.gui.entityInfo)) then
 					ix.gui.entityInfo:Remove()
 				end
 
-				local infoPanel = vgui.Create(ix.option.Get("minimalTooltips", false) and "ixTooltipMinimal" or "ixTooltip")
+				local infoPanel = vgui.Create(ix.option.Get("minimalTooltips", false) and "ixTooltipMinimal" or
+				"ixTooltip")
 				local entityPlayer = lastEntity:GetNetVar("player")
 
 				if (entityPlayer) then
@@ -558,7 +557,7 @@ local surface = surface
 function GM:HUDPaintBackground()
 	local client = LocalPlayer()
 
-	if (!client:GetCharacter()) then
+	if (! client:GetCharacter()) then
 		return
 	end
 
@@ -579,7 +578,7 @@ function GM:HUDPaintBackground()
 		blurDelta = mathApproach(blurDelta, blurGoal, frameTime * 20)
 	end
 
-	if (blurDelta > 0 and !client:ShouldDrawLocalPlayer()) then
+	if (blurDelta > 0 and ! client:ShouldDrawLocalPlayer()) then
 		ix.util.DrawBlurAt(0, 0, scrW, scrH, blurDelta)
 	end
 
@@ -615,12 +614,13 @@ function GM:HUDPaintBackground()
 			surface.SetDrawColor(255, 255, 255, 3)
 			surface.DrawOutlinedRect(x, y, 128, 64)
 
-			ix.util.DrawText((clip == -1 or clipMax == -1) and count or clip.."/"..count, x + 64, y + 32, nil, 1, 1, "ixBigFont")
+			ix.util.DrawText((clip == -1 or clipMax == -1) and count or clip .. "/" .. count, x + 64, y + 32, nil, 1, 1,
+				"ixBigFont")
 		end
 	end
 
-	if (client:GetLocalVar("restricted") and !client:GetLocalVar("restrictNoMsg")) then
-		ix.util.DrawText(L"restricted", scrW * 0.5, scrH * 0.33, nil, 1, 1, "ixBigFont")
+	if (client:GetLocalVar("restricted") and ! client:GetLocalVar("restrictNoMsg")) then
+		ix.util.DrawText(L "restricted", scrW * 0.5, scrH * 0.33, nil, 1, 1, "ixBigFont")
 	end
 end
 
@@ -631,26 +631,26 @@ function GM:PostDrawOpaqueRenderables(bDepth, bSkybox)
 
 	ix.util.ResetStencilValues()
 	render.SetStencilEnable(true)
-		render.SetStencilWriteMask(27)
-		render.SetStencilTestMask(27)
-		render.SetStencilFailOperation(STENCILOPERATION_KEEP)
-		render.SetStencilZFailOperation(STENCILOPERATION_KEEP)
-		render.SetStencilPassOperation(STENCILOPERATION_REPLACE)
-		render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
-		render.SetStencilReferenceValue(27)
+	render.SetStencilWriteMask(27)
+	render.SetStencilTestMask(27)
+	render.SetStencilFailOperation(STENCILOPERATION_KEEP)
+	render.SetStencilZFailOperation(STENCILOPERATION_KEEP)
+	render.SetStencilPassOperation(STENCILOPERATION_REPLACE)
+	render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
+	render.SetStencilReferenceValue(27)
 
-		for i = 1, #ix.blurRenderQueue do
-			ix.blurRenderQueue[i]()
-		end
+	for i = 1, #ix.blurRenderQueue do
+		ix.blurRenderQueue[i]()
+	end
 
-		render.SetStencilReferenceValue(34)
-		render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
-		render.SetStencilPassOperation(STENCILOPERATION_REPLACE)
-		render.SetStencilReferenceValue(27)
+	render.SetStencilReferenceValue(34)
+	render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
+	render.SetStencilPassOperation(STENCILOPERATION_REPLACE)
+	render.SetStencilReferenceValue(27)
 
-		cam.Start2D()
-			ix.util.DrawBlurAt(0, 0, ScrW(), ScrH())
-		cam.End2D()
+	cam.Start2D()
+	ix.util.DrawBlurAt(0, 0, ScrW(), ScrH())
+	cam.End2D()
 	render.SetStencilEnable(false)
 
 	ix.blurRenderQueue = {}
@@ -658,11 +658,11 @@ end
 
 function GM:PostDrawHUD()
 	cam.Start2D()
-		ix.hud.DrawAll()
+	ix.hud.DrawAll()
 
-		if (!IsValid(ix.gui.deathScreen) and (!IsValid(ix.gui.characterMenu) or ix.gui.characterMenu:IsClosing())) then
-			ix.bar.DrawAction()
-		end
+	if (! IsValid(ix.gui.deathScreen) and (! IsValid(ix.gui.characterMenu) or ix.gui.characterMenu:IsClosing())) then
+		ix.bar.DrawAction()
+	end
 	cam.End2D()
 end
 
@@ -671,14 +671,14 @@ function GM:ShouldPopulateEntityInfo(entity)
 	local ragdoll = Entity(client:GetLocalVar("ragdoll", 0))
 	local entityPlayer = entity:GetNetVar("player")
 
-	if (vgui.CursorVisible() or !client:Alive() or IsValid(ragdoll) or entity == client or entityPlayer == client) then
+	if (vgui.CursorVisible() or ! client:Alive() or IsValid(ragdoll) or entity == client or entityPlayer == client) then
 		return false
 	end
 end
 
 local injTextTable = {
-	[.3] = {"injMajor", Color(192, 57, 43)},
-	[.6] = {"injLittle", Color(231, 76, 60)},
+	[.3] = { "injMajor", Color(192, 57, 43) },
+	[.6] = { "injLittle", Color(231, 76, 60) },
 }
 
 function GM:GetInjuredText(client)
@@ -729,12 +729,12 @@ function GM:PopulateCharacterInfo(client, character, container)
 end
 
 function GM:KeyRelease(client, key)
-	if (!IsFirstTimePredicted()) then
+	if (! IsFirstTimePredicted()) then
 		return
 	end
 
 	if (key == IN_USE) then
-		if (!ix.menu.IsOpen()) then
+		if (! ix.menu.IsOpen()) then
 			local data = {}
 			data.start = client:GetShootPos()
 			data.endpos = data.start + client:GetAimVector() * 96
@@ -751,6 +751,7 @@ function GM:KeyRelease(client, key)
 
 		client.ixInteractionTarget = nil
 		client.ixInteractionStartTime = nil
+		client.ixInteractionDuration = nil
 	end
 end
 
@@ -762,12 +763,12 @@ function GM:PlayerBindPress(client, bind, pressed)
 
 		if (pickupTime > 0) then
 			local data = {}
-				data.start = client:GetShootPos()
-				data.endpos = data.start + client:GetAimVector() * 96
-				data.filter = client
+			data.start = client:GetShootPos()
+			data.endpos = data.start + client:GetAimVector() * 96
+			data.filter = client
 			local entity = util.TraceLine(data).Entity
 
-			if (IsValid(entity) and entity.ShowPlayerInteraction and !ix.menu.IsOpen()) then
+			if (IsValid(entity) and entity.ShowPlayerInteraction and ! ix.menu.IsOpen()) then
 				client.ixInteractionTarget = entity
 				client.ixInteractionStartTime = SysTime()
 
@@ -793,8 +794,8 @@ function GM:PlayerBindPress(client, bind, pressed)
 end
 
 function GM:CreateMove(command)
-	if ((IsValid(ix.gui.characterMenu) and !ix.gui.characterMenu.bClosing) or
-		(IsValid(ix.gui.menu) and !ix.gui.menu.bClosing and ix.gui.menu:GetActiveTab() == "you")) then
+	if ((IsValid(ix.gui.characterMenu) and ! ix.gui.characterMenu.bClosing) or
+			(IsValid(ix.gui.menu) and ! ix.gui.menu.bClosing and ix.gui.menu:GetActiveTab() == "you")) then
 		command:ClearButtons()
 		command:ClearMovement()
 	end
@@ -804,7 +805,7 @@ end
 function GM:ShowEntityMenu(entity)
 	local options = entity:GetEntityMenu(LocalPlayer())
 
-	if (istable(options) and !table.IsEmpty(options)) then
+	if (istable(options) and ! table.IsEmpty(options)) then
 		ix.menu.Open(options, entity)
 	end
 end
@@ -847,56 +848,56 @@ function GM:RenderScreenspaceEffects()
 		local weapon = client:GetActiveWeapon()
 
 		cam.Start3D()
-			ix.util.ResetStencilValues()
-			render.SetStencilEnable(true)
-			render.SuppressEngineLighting(true)
-			cam.IgnoreZ(true)
-				render.SetColorModulation(1, 1, 1)
-				render.SetStencilWriteMask(28)
-				render.SetStencilTestMask(28)
-				render.SetStencilReferenceValue(28)
+		ix.util.ResetStencilValues()
+		render.SetStencilEnable(true)
+		render.SuppressEngineLighting(true)
+		cam.IgnoreZ(true)
+		render.SetColorModulation(1, 1, 1)
+		render.SetStencilWriteMask(28)
+		render.SetStencilTestMask(28)
+		render.SetStencilReferenceValue(28)
 
-				render.SetStencilCompareFunction(STENCIL_ALWAYS)
-				render.SetStencilPassOperation(STENCIL_REPLACE)
-				render.SetStencilFailOperation(STENCIL_KEEP)
-				render.SetStencilZFailOperation(STENCIL_KEEP)
+		render.SetStencilCompareFunction(STENCIL_ALWAYS)
+		render.SetStencilPassOperation(STENCIL_REPLACE)
+		render.SetStencilFailOperation(STENCIL_KEEP)
+		render.SetStencilZFailOperation(STENCIL_KEEP)
 
-				if (IsValid(target)) then
-					target:DrawModel()
-				else
-					client:DrawModel()
-				end
+		if (IsValid(target)) then
+			target:DrawModel()
+		else
+			client:DrawModel()
+		end
 
-				if (IsValid(weapon)) then
-					weapon:DrawModel()
-				end
+		if (IsValid(weapon)) then
+			weapon:DrawModel()
+		end
 
-				hook.Run("DrawCharacterOverview")
+		hook.Run("DrawCharacterOverview")
 
-				render.SetStencilCompareFunction(STENCIL_NOTEQUAL)
-				render.SetStencilPassOperation(STENCIL_KEEP)
+		render.SetStencilCompareFunction(STENCIL_NOTEQUAL)
+		render.SetStencilPassOperation(STENCIL_KEEP)
 
-				cam.Start2D()
-					derma.SkinFunc("DrawCharacterStatusBackground", menu, menu.overviewFraction)
-				cam.End2D()
-			cam.IgnoreZ(false)
-			render.SuppressEngineLighting(false)
-			render.SetStencilEnable(false)
+		cam.Start2D()
+		derma.SkinFunc("DrawCharacterStatusBackground", menu, menu.overviewFraction)
+		cam.End2D()
+		cam.IgnoreZ(false)
+		render.SuppressEngineLighting(false)
+		render.SetStencilEnable(false)
 		cam.End3D()
 	end
 end
 
 function GM:ShowPlayerOptions(client, options)
-	options["viewProfile"] = {"icon16/user.png", function()
+	options["viewProfile"] = { "icon16/user.png", function()
 		if (IsValid(client)) then
 			client:ShowProfile()
 		end
-	end}
-	options["Copy Steam ID"] = {"icon16/user.png", function()
+	end }
+	options["Copy Steam ID"] = { "icon16/user.png", function()
 		if (IsValid(client)) then
 			SetClipboardText(client:SteamID())
 		end
-	end}
+	end }
 end
 
 function GM:DrawHelixModelView(panel, ent)
@@ -920,8 +921,8 @@ net.Receive("ixStringRequest", function()
 
 	Derma_StringRequest(title, subTitle, default or "", function(text)
 		net.Start("ixStringRequest")
-			net.WriteUInt(time, 32)
-			net.WriteString(text)
+		net.WriteUInt(time, 32)
+		net.WriteString(text)
 		net.SendToServer()
 	end)
 end)
@@ -981,7 +982,7 @@ hook.Add("player_spawn", "ixPlayerSpawn", function(data)
 		client:SetupBones()
 		client:SetIK(false)
 
-		if (client == LocalPlayer() and (IsValid(ix.gui.deathScreen) and !ix.gui.deathScreen:IsClosing())) then
+		if (client == LocalPlayer() and (IsValid(ix.gui.deathScreen) and ! ix.gui.deathScreen:IsClosing())) then
 			ix.gui.deathScreen:Close()
 		end
 	end
